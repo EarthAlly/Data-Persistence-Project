@@ -6,6 +6,10 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 public class MenuUIHandler : MonoBehaviour
 {
     [SerializeField] private GameObject inputBox;
@@ -32,5 +36,14 @@ public class MenuUIHandler : MonoBehaviour
         Manager.Instance.nameVal = nameText;
         
         SceneManager.LoadScene(1);
+    }
+    
+    public void Exit()
+    {
+        #if UNITY_EDITOR
+            EditorApplication.ExitPlaymode();
+        #else
+            Application.Quit(); // Original code to quit Unity player
+        #endif
     }
 }
