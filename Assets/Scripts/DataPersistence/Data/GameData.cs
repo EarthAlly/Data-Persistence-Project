@@ -5,7 +5,6 @@ using UnityEngine;
 [System.Serializable]
 public class GameData
 {
-    public string nameVal;
     public List<HighScoreData> highScoreDatas;
     
     // The values defined in this constructor will be the default values
@@ -13,7 +12,5 @@ public class GameData
     public GameData()
     {
         highScoreDatas = new List<HighScoreData>();
-        
-        this.nameVal = "";
     }
 }
