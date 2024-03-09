@@ -2,68 +2,56 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using UnityEngine.SceneManagement;
 
-public class Manager : MonoBehaviour
+public class Manager : MonoBehaviour, IDataPersistence
 {
-    public static Manager Instance;
-
-    public string nameVal;
+    public List<HighScoreData> highScoreDatas;
     
-    public string highScoreName;
-    public int highScoreValue;
-    
-    // Start is called before the first frame update
-    void Start()
+    public void LoadData(GameData data)
     {
-        
+        highScoreDatas = data.highScoreDatas;
     }
 
-    // Update is called once per frame
-    void Update()
+    public void SaveData(GameData data)
     {
-        
+        data.highScoreDatas = highScoreDatas;
     }
-
-    private void Awake()
+    
+    // Get the highest score from list items of HighScoreData class
+    public int GetHighScore()
     {
-        if (Instance != null)
+        int highestScore = 0;
+        
+        foreach (var highScoreData in highScoreDatas)
         {
-            Destroy(gameObject);
-            return;
+            if (highScoreData.highScoreValue > highestScore)
+            {
+                highestScore = highScoreData.highScoreValue;
+            }
         }
 
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
+        return highestScore;
     }
-
-    [System.Serializable]
-
-    class SaveData
+    
+    public string GetHighScoreName()
     {
-        public string highScoreName;
-        public int highScoreValue;
-    }
-
-    public void SaveHighScore()
-    {
-        SaveData data = new SaveData();
-        data.highScoreName = highScoreName;
-        data.highScoreValue = highScoreValue;
-
-        string json = JsonUtility.ToJson(data);
-        File.WriteAllText(Application.persistentDataPath + "/savefile.json", json);
-    }
-
-    public void LoadHighScore()
-    {
-        string path = Application.persistentDataPath + "/savefile.json";
-        if (File.Exists(path))
+        int highestScore = 0;
+        string highestScoreName = "";
+        
+        foreach (var highScoreData in highScoreDatas)
         {
-            string json = File.ReadAllText(path);
-            SaveData data = JsonUtility.FromJson<SaveData>(json);
-
-            highScoreName = data.highScoreName;
-            highScoreValue = data.highScoreValue;
+            if (highScoreData.highScoreValue > highestScore)
+            {
+                highestScoreName = highScoreData.highScoreName;
+            }
         }
+
+        return highestScoreName;
+    }
+    
+    public void BackToMenu()
+    {
+        SceneManager.LoadScene(0);
     }
 }

@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
+    public Manager manager;
+    
     public Brick BrickPrefab;
     public int LineCount = 6;
     public Rigidbody Ball;
@@ -14,20 +16,25 @@ public class MainManager : MonoBehaviour
     public Text ScoreText;
     public Text HighScoreText;
     public GameObject GameOverText;
+    public GameObject MenuButton;
     
     private bool m_Started = false;
     private int m_Points;
     
     private bool m_GameOver = false;
 
+    public PersistentObject persistentObject;
     
     // Start is called before the first frame update
     void Start()
     {
-        ScoreText.text = Manager.Instance.nameVal + " - Score : " + m_Points;
+        persistentObject = GameObject.Find("PersistentObject").GetComponent<PersistentObject>();
+        manager = GameObject.Find("Manager").GetComponent<Manager>();
+        
+        ScoreText.text = persistentObject.nameVal + " - Score : " + m_Points;
         
         // Load high score
-        Manager.Instance.LoadHighScore();
+
         SetHighScoreText();
         
         const float step = 0.6f;
@@ -73,31 +80,38 @@ public class MainManager : MonoBehaviour
     void AddPoint(int point)
     {
         m_Points += point;
-        ScoreText.text = Manager.Instance.nameVal + " - Score : " + m_Points;
+        ScoreText.text = persistentObject.nameVal + " - Score : " + m_Points;
     }
 
     public void GameOver()
     {
-        // Check if high score beaten
-        if (m_Points > Manager.Instance.highScoreValue)
+        // Set high score variables
+        HighScoreData highScoreData = new HighScoreData();
+        highScoreData.highScoreName = persistentObject.nameVal;
+        highScoreData.highScoreValue = m_Points;
+        
+        manager.highScoreDatas.Add(highScoreData);
+        
+        // If there are more than 5 high scores, remove the lowest one
+        if (manager.highScoreDatas.Count > 5)
         {
-            // Set high score variables
-            Manager.Instance.highScoreValue = m_Points;
-            Manager.Instance.highScoreName = Manager.Instance.nameVal;
-            
-            // Set the high score text
-            SetHighScoreText();
-            
-            // Save values
-            Manager.Instance.SaveHighScore();
+            manager.highScoreDatas.Sort((x, y) => x.highScoreValue.CompareTo(y.highScoreValue));
+            manager.highScoreDatas.RemoveAt(0);
         }
         
+        // Set the high score text
+        SetHighScoreText();
+            
+        // Save values
+        DataPersistenceManager.instance.SaveGame();
+
         m_GameOver = true;
         GameOverText.SetActive(true);
+        MenuButton.SetActive(true);
     }
 
     void SetHighScoreText()
     {
-        HighScoreText.text = "Best Score : " + Manager.Instance.highScoreName + " : " + Manager.Instance.highScoreValue;
+        HighScoreText.text = "Best Score : " + manager.GetHighScoreName() + " : " + manager.GetHighScore();
     }
 }
